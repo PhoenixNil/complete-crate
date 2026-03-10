@@ -1,71 +1,40 @@
-# complete-crate README
+# CrateLite
 
-This is the README for your extension "complete-crate". After writing up a brief description, we recommend including the following sections.
+CrateLite is a lightweight VS Code extension for editing `Cargo.toml`. It adds fast, focused completion for Rust dependencies without trying to be a full Cargo assistant.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Crate name completion inside dependency sections
+- Latest version completion from a cached crate index
+- Feature completion inside `features = []`
+- Local index caching for quick suggestions after the first download
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage
 
-\!\[feature X\]\(images/feature-x.png\)
+Open a `Cargo.toml` file and start typing in `[dependencies]`:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+```toml
+[dependencies]
+ser
+serde = "1"
+tokio = { version = "1", features = ["rt-", "mac"] }
+```
 
-## Requirements
+CrateLite will suggest:
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- matching crate names like `serde`
+- the latest known version for a crate
+- available feature names for inline dependency tables
 
-## Extension Settings
+## Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- `cratelite.indexUrl`: URL of the compressed crate index file
+- `cratelite.maxSuggestions`: maximum number of crate suggestions
+- `cratelite.minTriggerLength`: minimum typed characters before crate suggestions appear
+- `cratelite.featureIndexBaseUrl`: base URL for feature metadata lookups
 
-For example:
+## Notes
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- The crate index is downloaded on first use and then cached locally.
+- Feature suggestions may require network access to fetch crate metadata.
+- This extension is focused on `Cargo.toml` editing.
