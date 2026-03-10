@@ -1,0 +1,75 @@
+{
+  "name": "cratelite",
+  "displayName": "CrateLite",
+  "description": "Lightning-fast crate name completion for Cargo.toml",
+  "version": "0.0.1",
+  "publisher": "PhoenixNil",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PhoenixNil/cratelite"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "rust",
+    "cargo",
+    "crates",
+    "toml",
+    "completion"
+  ],
+  "activationEvents": [
+    "onLanguage:toml",
+    "onLanguage:cargo-toml",
+    "workspaceContains:**/Cargo.toml",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "CrateLite",
+      "properties": {
+        "cratelite.indexUrl": {
+          "type": "string",
+          "default": "https://github.com/PhoenixNil/Autoupdate-cratelite/releases/download/latest/crates-index.txt.gz",
+          "description": "URL to download the crates index file"
+        },
+        "cratelite.maxSuggestions": {
+          "type": "number",
+          "default": 30,
+          "description": "Maximum number of crate suggestions to show"
+        },
+        "cratelite.minTriggerLength": {
+          "type": "number",
+          "default": 2,
+          "description": "Minimum characters to type before triggering completion"
+        },
+        "cratelite.featureIndexBaseUrl": {
+          "type": "string",
+          "default": "https://index.crates.io",
+          "description": "Base URL for sparse index requests used by feature completion"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "test": "npm run compile && node --experimental-test-isolation=none --test out/crateFeatureService.test.js out/featureSuggestions.test.js out/tomlParser.test.js",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "semver": "^7.7.4"
+  }
+}
