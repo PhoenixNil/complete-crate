@@ -18,6 +18,7 @@ const featureCompletionTriggerCharacters = [
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
+  const prefetchCrateCommandId = "cratelite.prefetchCrate";
   const outputChannel = vscode.window.createOutputChannel("CrateLite");
   context.subscriptions.push(outputChannel);
 
@@ -29,7 +30,33 @@ export async function activate(
     { scheme: "file", pattern: "**/Cargo.toml" },
   ];
 
-  const crateProvider = new CrateCompletionProvider(index);
+  const config = vscode.workspace.getConfiguration("cratelite");
+  const featureIndexBaseUrl = config.get<string>(
+    "featureIndexBaseUrl",
+    "https://index.crates.io"
+  );
+  const featureService = new CrateFeatureService(
+    undefined,
+    featureIndexBaseUrl,
+    {
+      warn(message: string) {
+        outputChannel.appendLine(message);
+      },
+    }
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      prefetchCrateCommandId,
+      (crateName: string) => {
+        void featureService.prefetchCrate(crateName).catch(() => {});
+      }
+    )
+  );
+
+  const crateProvider = new CrateCompletionProvider(
+    index,
+    prefetchCrateCommandId
+  );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       tomlSelector,
@@ -46,20 +73,6 @@ export async function activate(
     )
   );
 
-  const config = vscode.workspace.getConfiguration("cratelite");
-  const featureIndexBaseUrl = config.get<string>(
-    "featureIndexBaseUrl",
-    "https://index.crates.io"
-  );
-  const featureService = new CrateFeatureService(
-    undefined,
-    featureIndexBaseUrl,
-    {
-      warn(message: string) {
-        outputChannel.appendLine(message);
-      },
-    }
-  );
   const featureProvider = new FeatureCompletionProvider(featureService, {
     warn(message: string) {
       outputChannel.appendLine(message);

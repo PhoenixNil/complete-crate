@@ -17,7 +17,10 @@ import {
  */
 export class CrateCompletionProvider
   implements vscode.CompletionItemProvider {
-  constructor(private index: CrateIndex) { }
+  constructor(
+    private readonly index: CrateIndex,
+    private readonly prefetchCommandId: string
+  ) { }
 
   provideCompletionItems(
     document: vscode.TextDocument,
@@ -87,6 +90,11 @@ export class CrateCompletionProvider
       item.documentation = new vscode.MarkdownString(
         `**${entry.name}** v${entry.version}\n\nPopularity rank: #${entry.rank + 1} on crates.io`
       );
+      item.command = {
+        command: this.prefetchCommandId,
+        title: "Prefetch crate features",
+        arguments: [entry.name],
+      };
 
       return item;
     });

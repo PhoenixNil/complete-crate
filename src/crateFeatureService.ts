@@ -257,6 +257,15 @@ export class CrateFeatureService {
     this.normalizedBaseUrl = normalizeBaseUrl(sparseIndexBaseUrl);
   }
 
+  async prefetchCrate(crateName: string): Promise<void> {
+    const normalizedName = crateName.trim().toLowerCase();
+    if (normalizedName.length === 0) {
+      return;
+    }
+
+    await this.getCrateRecords(normalizedName);
+  }
+
   async getFeatures(
     crateName: string,
     versionRequirement: string

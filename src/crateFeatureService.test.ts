@@ -90,6 +90,38 @@ test("CrateFeatureService caches crate payloads and reuses resolved feature sets
   assert.equal(requestCount, 1);
 });
 
+test("CrateFeatureService prefetches crate payloads for later feature lookups", async () => {
+  let requestCount = 0;
+  const payload = [
+    JSON.stringify({
+      vers: "1.0.0",
+      features: { derive: [] },
+    }),
+    JSON.stringify({
+      vers: "1.2.0",
+      features: { derive: [], std: [] },
+      features2: { alloc: [] },
+    }),
+    JSON.stringify({
+      vers: "2.0.0",
+      features: { unstable: [] },
+    }),
+  ].join("\n");
+
+  const service = new CrateFeatureService(async () => {
+    requestCount++;
+    return Buffer.from(payload, "utf-8");
+  });
+
+  await service.prefetchCrate("serde");
+  const first = await service.getFeatures("serde", "1");
+  const second = await service.getFeatures("serde", "^1.0");
+
+  assert.deepEqual(first, ["alloc", "derive", "std"]);
+  assert.deepEqual(second, ["alloc", "derive", "std"]);
+  assert.equal(requestCount, 1);
+});
+
 test("CrateFeatureService deduplicates in-flight crate fetches", async () => {
   let requestCount = 0;
   let releaseRequest: () => void = () => {
@@ -119,4 +151,57 @@ test("CrateFeatureService deduplicates in-flight crate fetches", async () => {
   const [first, second] = await pendingRequests;
   assert.deepEqual(first, ["derive"]);
   assert.deepEqual(second, ["derive"]);
+});
+
+test("CrateFeatureService retries after a failed prefetch", async () => {
+  let requestCount = 0;
+  const payload = JSON.stringify({
+    vers: "1.0.0",
+    features: { derive: [] },
+  });
+
+  const service = new CrateFeatureService(async () => {
+    requestCount++;
+    if (requestCount === 1) {
+      throw new Error("network down");
+    }
+
+    return Buffer.from(payload, "utf-8");
+  });
+
+  await service.prefetchCrate("serde");
+  const features = await service.getFeatures("serde", "1");
+
+  assert.deepEqual(features, ["derive"]);
+  assert.equal(requestCount, 2);
+});
+
+test("CrateFeatureService shares in-flight requests between prefetch and getFeatures", async () => {
+  let requestCount = 0;
+  let releaseRequest: () => void = () => {
+    throw new Error("releaseRequest was not initialized");
+  };
+  const payload = JSON.stringify({
+    vers: "1.0.0",
+    features: { derive: [] },
+  });
+
+  const service = new CrateFeatureService(
+    async () =>
+      new Promise<Buffer>((resolve) => {
+        requestCount++;
+        releaseRequest = () => resolve(Buffer.from(payload, "utf-8"));
+      })
+  );
+
+  const pendingRequests = Promise.all([
+    service.prefetchCrate("serde"),
+    service.getFeatures("serde", "1"),
+  ]);
+
+  assert.equal(requestCount, 1);
+  releaseRequest();
+
+  const [, features] = await pendingRequests;
+  assert.deepEqual(features, ["derive"]);
 });
