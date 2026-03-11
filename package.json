@@ -1,13 +1,14 @@
 {
   "name": "cratelite",
   "displayName": "CrateLite",
+  "icon": "icon.png",
   "description": "Lightning-fast crate name completion for Cargo.toml",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "PhoenixNil",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PhoenixNil/cratelite"
+    "url": "https://github.com/PhoenixNil/complete-crate"
   },
   "engines": {
     "vscode": "^1.85.0"
