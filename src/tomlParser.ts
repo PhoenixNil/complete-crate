@@ -95,10 +95,6 @@ function stripLineComment(lineText: string): string {
   return lineText;
 }
 
-function getDocumentText(document: vscode.TextDocument): string {
-  return document.getText();
-}
-
 function getLineStartOffsets(text: string): number[] {
   const offsets = [0];
 
@@ -424,7 +420,7 @@ function parseInlineDependencyTable(
   closingBraceOffset: number,
   cursorOffset: number
 ): ParsedInlineDependencyTable {
-  const text = getDocumentText(document);
+  const text = document.getText();
   let packageName: string | null = null;
   let versionRequirement: string | null = null;
   let featureArray: ParsedFeatureArray | null = null;
@@ -493,7 +489,7 @@ function findInlineDependencyStart(
   document: vscode.TextDocument,
   position: vscode.Position
 ): InlineDependencyStart | null {
-  const documentText = getDocumentText(document);
+  const documentText = document.getText();
   const lineStartOffsets = getLineStartOffsets(documentText);
   const cursorOffset = document.offsetAt(position);
 
@@ -646,7 +642,7 @@ export function getFeatureCompletionContext(
     return null;
   }
 
-  const documentText = getDocumentText(document);
+  const documentText = document.getText();
   const closingBraceOffset = findMatchingDelimiter(
     documentText,
     dependencyStart.openingBraceOffset,
